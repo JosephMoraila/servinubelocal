@@ -56,6 +56,15 @@
     gap: 2rem;
 }
 
+.folder-image {
+    position: absolute;
+
+    left: 45%;
+    transform: translate(-50%, -80%); /* Lo mueve justo encima de la flecha */
+    width: 6vw !important; /* Ajusta el tamaño en relación con el ancho de la pantalla */
+
+}
+
 /* Estilos para pantallas pequeñas */
 @media (max-width: 768px) {
     .WhatIsAbout {
@@ -91,5 +100,13 @@
         max-width: 30vw; /* Límite máximo en pantallas pequeñas */
         margin: 5vh; /* Reducir el margen en pantallas pequeñas */
     }
+
+    .folder-image {    
+        left: 45%;
+        transform: translate(70%, 20%); /* Lo mueve justo al lado derecho de la flecha */
+        width: 12vw !important; /* Ajusta el tamaño en relación con el ancho de la pantalla */
+    
+    }
+
 }
 
