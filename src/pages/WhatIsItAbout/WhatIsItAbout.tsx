@@ -10,6 +10,8 @@ import white_computer from '/images/Computer_white.png'
 import black_computer from '/images/Computer_black.png'
 import white_folder from '/images/folder_white.png'
 import black_folder from '/images/folder_black.webp'
+import photo_icon_black from '/images/photo_icon_black.png'
+import photo_icon_white from '/images/photo_icon_white.png'
 
 const WhatIsAbout = () => {
     const { effectiveMode } = useDarkMode(); // Obtener el estado del modo oscuro
@@ -18,6 +20,7 @@ const WhatIsAbout = () => {
     const arrowImgMode = effectiveMode === 'dark' ? rightArrow_white : rightArrow_black
     const PCImgMode = effectiveMode === 'dark' ? white_computer : black_computer
     const folderImgMode = effectiveMode === 'dark' ? white_folder : black_folder
+    const iconPhotoImgMode = effectiveMode === 'dark' ? photo_icon_white : photo_icon_black
 
     return(
       <div className="WhatIsAbout">
@@ -28,7 +31,8 @@ const WhatIsAbout = () => {
           <img src={cellphoneImgMode} alt='Celular'/>
           <img src={arrowImgMode} alt='Arrow' className='arrow-image'/>
           <img src={PCImgMode} alt='Celular'/>
-          <img src={folderImgMode} alt='Celular' className="folder-image"/>
+          <img src={folderImgMode} alt='folder' className="folder-image"/>
+          <img src={iconPhotoImgMode} alt='icono photo' className="iconPhoto-image"/>
           
         </div>
         <hr></hr>

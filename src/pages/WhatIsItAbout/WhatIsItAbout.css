@@ -58,11 +58,17 @@
 
 .folder-image {
     position: absolute;
-
     left: 45%;
     transform: translate(-50%, -80%); /* Lo mueve justo encima de la flecha */
     width: 6vw !important; /* Ajusta el tamaño en relación con el ancho de la pantalla */
 
+}
+
+.iconPhoto-image{
+    position: absolute;
+    left: 45%;
+    transform: translate(-50%, 80%); /* Lo mueve justo abajo de la flecha */
+    width: 6vw !important; /* Ajusta el tamaño en relación con el ancho de la pantalla */
 }
 
 /* Estilos para pantallas pequeñas */
@@ -85,11 +91,6 @@
         margin-bottom: 10dvh;
     }
 
-    .images-container {
-        flex-direction: column;
-        gap: 1rem;
-    }
-
     .arrow-image {
         transform: rotate(90deg);
     }
@@ -101,11 +102,20 @@
         margin: 5vh; /* Reducir el margen en pantallas pequeñas */
     }
 
+    .images-container {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
     .folder-image {    
-        left: 45%;
-        transform: translate(70%, 20%); /* Lo mueve justo al lado derecho de la flecha */
+        transform: translate(5vw, 4vh); /* Lo mueve justo al lado derecho de la flecha */
         width: 12vw !important; /* Ajusta el tamaño en relación con el ancho de la pantalla */
     
+    }
+
+    .iconPhoto-image{
+        transform: translate(-25vw, 4vh); /* Lo mueve justo al lado izquierdo de la flecha */
+        width: 12vw !important; /* Ajusta el tamaño en relación con el ancho de la pantalla */
     }
 
 }
