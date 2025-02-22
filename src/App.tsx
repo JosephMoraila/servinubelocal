@@ -15,6 +15,8 @@ import HeroSection from './pages/Hero/Hero';
 import NotFound from './pages/NotFound/NotFound';
 import About from './pages/About/About';
 import WhatIsAbout from './pages/WhatIsItAbout/WhatIsItAbout';
+import Login from './pages/Login/Login';
+import Register from './pages/Register/Register';
 
 const AppContent: React.FC = () => {
   const { isLoadingBar } = useLoadingBar();
@@ -25,7 +27,7 @@ const AppContent: React.FC = () => {
 
 
   // Define las rutas donde Navigation no debe aparecer
-  const hideNavigationPaths = ['/register', '/terms', '/privacy', '/waiting', '/feed'];
+  const hideNavigationPaths = [ '/terms', '/privacy', '/waiting', '/feed'];
 
   // Mostrar NavigationFeed si la ruta actual es /feed
   const isFeedPage = location.pathname.toLowerCase().startsWith('/feed');
@@ -44,6 +46,8 @@ const AppContent: React.FC = () => {
         <Route path="/" element={<HeroSection />} />
         <Route path="/about" element={<About />} />
         <Route path="/whatIsItAbout" element={<WhatIsAbout />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
         {/* Ruta protegida para /feed */}
 
