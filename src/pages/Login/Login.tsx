@@ -19,7 +19,7 @@ const Login = () => {
       <h1>Iniciar Sesión</h1>
       <form  className="register-form">
         <div className="form-group">
-          <label htmlFor="email">Correo Electrónico:</label>
+          <label htmlFor="email">Nombre ID:</label>
           <input
             type="email"
             id="email"

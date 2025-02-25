@@ -1,7 +1,7 @@
 import { useEffect, useState, FormEvent } from 'react';
 import { useDarkMode } from '../../contexts/DarkModeContext';
 import { NavLink, useNavigate } from 'react-router-dom';
-import './Register.css';
+import '../'
 
 const Register = () => {
   const navigate = useNavigate();
@@ -50,7 +50,7 @@ const Register = () => {
 
           <div className="form-group">
             <div className="label-help-container">
-              <label htmlFor="namePublic">Nombre público:</label>
+              <label htmlFor="userName">Nombre público:</label>
               <span className="help-icon">?
                 <span className="tooltip">
                   Este nombre será visible para otros usuarios en la plataforma
@@ -59,7 +59,7 @@ const Register = () => {
             </div>
             <input
               type="text"
-              id="namePublic"
+              id="userName"
               value={formData.userName}
               onChange={handleInputChange}
               required
