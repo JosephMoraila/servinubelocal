@@ -1,7 +1,7 @@
 import { useEffect, useState, FormEvent } from 'react';
 import { useDarkMode } from '../../contexts/DarkModeContext';
 import { NavLink, useNavigate } from 'react-router-dom';
-import '../'
+import './Register.css'
 
 const Register = () => {
   const navigate = useNavigate();
