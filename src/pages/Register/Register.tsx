@@ -41,11 +41,41 @@ const Register = () => {
     }
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formData.password !== formData.confirmPassword) {
+      alert("Las contraseñas no coinciden");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:3000/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          publicName: formData.userName,
+          username: formData.nameID,
+          password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        alert("Registro exitoso");
+      } else {
+        alert(data.message);
+      }
+    } catch (error) {
+      console.error("Error al registrar:", error);
+      alert("Hubo un error en el registro");
+    }
+  };
+
   return (
     <div className={`register-container ${useDarkMode().effectiveMode === 'dark' ? 'dark' : ''}`}>
       <h1>Registro</h1>
       
-      <form className="register-form">
+      <form className="register-form" onSubmit={handleSubmit}>
         <>
 
           <div className="form-group">
