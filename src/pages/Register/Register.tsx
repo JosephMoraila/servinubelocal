@@ -1,10 +1,12 @@
 import { useEffect, useState, FormEvent } from 'react';
 import { useDarkMode } from '../../contexts/DarkModeContext';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { useMessageBoxContext } from '../../contexts/MessageBoxContext';
 import './Register.css'
 
 const Register = () => {
   const navigate = useNavigate();
+  const {setMessageMessageBox} = useMessageBoxContext();
 
   // Estados del formulario
   const [formData, setFormData] = useState({
@@ -61,7 +63,7 @@ const Register = () => {
 
       const data = await response.json();
       if (response.ok) {
-        alert("Registro exitoso");
+        setMessageMessageBox("Registro exitoso. Inicia sesión para continuar.");
       } else {
         alert(data.message);
       }
