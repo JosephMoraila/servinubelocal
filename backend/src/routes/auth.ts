@@ -1,13 +1,9 @@
 import { Router, Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
 import { pool } from "../config/db";
+import { asyncHandler } from "../utils/asyncHandler";
 
 const router = Router();
-
-// Middleware para manejar async/await en Express
-const asyncHandler = (fn: Function) => (req: Request, res: Response, next: NextFunction) => {
-    Promise.resolve(fn(req, res, next)).catch(next);
-};
 
 // Verificar si la tabla "usuarios" existe y crearla si no
 const checkAndCreateTable = async () => {
