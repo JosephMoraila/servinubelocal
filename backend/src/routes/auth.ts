@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import { Router, Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
 import { pool } from "../config/db";
+import { asyncHandler } from "../utils/asyncHandler";
 
 const router = Router();
 
@@ -27,10 +28,6 @@ const generateToken = (userId: string) => {
     return jwt.sign({ userId }, JWT_SECRET, { expiresIn: "1h" });
 };
 
-// Middleware para manejar errores en async/await
-const asyncHandler = (fn: Function) => (req: Request, res: Response, next: NextFunction) => {
-    Promise.resolve(fn(req, res, next)).catch(next);
-};
 
 // 📌 Ruta de registro de usuario
 router.post("/register", asyncHandler(async (req: Request, res: Response) => {
@@ -56,9 +53,11 @@ router.post("/register", asyncHandler(async (req: Request, res: Response) => {
     );
 
     const newUser = result.rows[0];
+    console.log(`nuebo user: ${newUser}`);
 
     // Generar el JWT
     const token = generateToken(newUser.id);
+    console.log(`token: ${token}`);
 
     // Enviar el JWT en una cookie HttpOnly
     res.cookie("token", token, {

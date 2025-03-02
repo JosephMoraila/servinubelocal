@@ -10,6 +10,7 @@ import MessageBox from './components/MessageBox/MessageBox';
 import LoadingBar from './components/LoadingProgressBar/LoadingProgressBar';
 import Navigation from './components/Navigation/Navigation';
 import NavigationFeed from './components/NavigationFeed/NavigationFeed';
+import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
 
 import HeroSection from './pages/Hero/Hero';
 import NotFound from './pages/NotFound/NotFound';
@@ -17,6 +18,7 @@ import About from './pages/About/About';
 import WhatIsAbout from './pages/WhatIsItAbout/WhatIsItAbout';
 import Login from './pages/Login/Login';
 import Register from './pages/Register/Register';
+import Feed from './pages/Feed/Feed';
 
 const AppContent: React.FC = () => {
   const { isLoadingBar } = useLoadingBar();
@@ -50,7 +52,7 @@ const AppContent: React.FC = () => {
         <Route path="/register" element={<Register />} />
 
         {/* Ruta protegida para /feed */}
-
+        <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>

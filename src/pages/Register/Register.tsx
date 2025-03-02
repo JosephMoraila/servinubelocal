@@ -58,6 +58,7 @@ const Register = () => {
       const data = await response.json();
       if (response.ok) {
         setMessageMessageBox("Registro exitoso. Inicia sesión para continuar.");
+        navigate('/feed');
       } else {
         alert(data.message);
       }
