@@ -20,6 +20,10 @@ import Login from './pages/Login/Login';
 import Register from './pages/Register/Register';
 import Feed from './pages/Feed/Feed';
 
+import axios from 'axios';
+
+axios.defaults.withCredentials = true;
+
 const AppContent: React.FC = () => {
   const { isLoadingBar } = useLoadingBar();
   const {messageMessageBox} = useMessageBoxContext();

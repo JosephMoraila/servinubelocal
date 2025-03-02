@@ -1,8 +1,10 @@
 import express, { Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import registerRouter from "./routes/auth"; // Asegúrate de que la ruta sea correcta
 import validateRouter from "./routes/validate"; // Asegúrate de que la ruta sea correcta
+import loginRouter from "./routes/login"; // Asegúrate de que la ruta sea correcta
 
 dotenv.config();
 
@@ -18,6 +20,7 @@ app.use(cors({
 }));
 
 // Middleware para manejar JSON
+app.use(cookieParser());
 app.use(express.json());
 
 // Ruta de prueba
@@ -29,6 +32,8 @@ app.get("/", (req: Request, res: Response) => {
 app.use("/api", registerRouter);  // Aquí se vincula el router de registro
 
 app.use("/api", validateRouter);  // Aquí se vincula el router de validación
+
+app.use("/api", loginRouter);  // Aquí se vincula el router de inicio de sesión
 
 // Middleware de manejo de errores
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {

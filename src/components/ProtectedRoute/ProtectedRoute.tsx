@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Navigate, useLocation } from "react-router-dom";
+import axios from "axios";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -10,44 +11,31 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const location = useLocation();
 
-  // Función para obtener el token desde las cookies
-  const getTokenFromCookies = () => {
-    const cookies = document.cookie.split("; ");
-    const tokenCookie = cookies.find((row) => row.startsWith("token="));
-    return tokenCookie ? tokenCookie.split("=")[1] : null;
+// ...existing code...
+
+useEffect(() => {
+  const checkAuth = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/api/auth/validate", {
+        withCredentials: true,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      console.log("Response from validate:", response.data);
+      setIsAuthenticated(response.data.authenticated);
+    } catch (error) {
+      console.error("Auth check failed:", error);
+      setIsAuthenticated(false);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const token = getTokenFromCookies();
-
-      if (!token) {
-        setIsAuthenticated(false);
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const response = await fetch("http://localhost:3000/api/auth/validate", {
-          method: "GET",
-          credentials: "include", // Para enviar cookies al backend
-        });
-
-        if (response.ok) {
-          setIsAuthenticated(true);
-        } else {
-          setIsAuthenticated(false);
-        }
-      } catch (error) {
-        console.error("Error al validar el token:", error);
-        setIsAuthenticated(false);
-      }
-
-      setLoading(false);
-    };
-
-    checkAuth();
-  }, []);
+  checkAuth();
+}, []);
 
   if (loading) {
     return <div>Cargando...</div>;

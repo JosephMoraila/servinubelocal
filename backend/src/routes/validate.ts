@@ -6,20 +6,45 @@ import { asyncHandler } from "../utils/asyncHandler";
 
 const router = Router();
 const secretPath = path.join(__dirname, "../jwt_secret.key");
-const JWT_SECRET = fs.readFileSync(secretPath, "utf8").trim();
+
+let JWT_SECRET: string;
+
+try {
+    JWT_SECRET = fs.readFileSync(secretPath, "utf8").trim();
+} catch (error) {
+    console.error("❌ Error al leer jwt_secret.key:", error);
+    process.exit(1); // Detener la ejecución si no se puede leer la clave
+}
+
+// Ruta para validar el token
+// ...existing code...
 
 router.get("/auth/validate", asyncHandler(async (req: Request, res: Response) => {
+    console.log("Cookies recibidas:", req.cookies);
     const token = req.cookies.token;
 
     if (!token) {
-        return res.status(401).json({ message: "No autorizado" });
+        console.log("No token found in cookies");
+        return res.status(401).json({ 
+            authenticated: false,
+            message: "No token provided"
+        });
     }
 
     try {
-        jwt.verify(token, JWT_SECRET);
-        return res.status(200).json({ message: "Token válido" });
+        const decoded = jwt.verify(token, JWT_SECRET);
+        console.log("Token decoded:", decoded);
+        
+        return res.status(200).json({ 
+            authenticated: true,
+            user: decoded 
+        });
     } catch (error) {
-        return res.status(403).json({ message: "Token inválido o expirado" });
+        console.log("Token verification failed:", error);
+        return res.status(401).json({ 
+            authenticated: false,
+            message: "Invalid token"
+        });
     }
 }));
 

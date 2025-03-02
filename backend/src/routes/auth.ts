@@ -59,18 +59,20 @@ router.post("/register", asyncHandler(async (req: Request, res: Response) => {
     const token = generateToken(newUser.id);
     console.log(`token: ${token}`);
 
-    // Enviar el JWT en una cookie HttpOnly
     res.cookie("token", token, {
-        httpOnly: true,  // Evita el acceso a la cookie desde JavaScript
-        secure: process.env.NODE_ENV === "production",  // Asegura la cookie en HTTPS en producción
-        maxAge: 3600000,  // La cookie expira en 1 hora
+        httpOnly: true,
+        secure: false, // Cambiar a false para desarrollo local
+        sameSite: "lax",
+        maxAge: 3600000, // 1 hora
+        path: "/" // Asegurarse que la cookie está disponible en toda la app
+    })
+    .status(200)
+    .json({
+        success: true,
+        user: newUser,
+        token: token
     });
 
-    // Enviar respuesta sin el token en el cuerpo, ya que lo enviamos en la cookie
-    res.status(201).json({
-        message: "Usuario registrado con éxito",
-        usuario: newUser,
-    });
 }));
 
 export default router;

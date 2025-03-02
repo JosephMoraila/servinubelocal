@@ -1,30 +1,50 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDarkMode } from '../../contexts/DarkModeContext';
+import axios from 'axios';
 import '../../App.css';
 
 const Login = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [resetMessage, setResetMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
 
+    try {
+      const response = await axios.post('http://localhost:3000/api/login', {
+        username,
+        password
+      }, {
+        withCredentials: true
+      });
 
-
+      if (response.data.success) {
+        navigate('/feed');
+      }
+    } catch (error: any) {
+      setError(error.response?.data?.message || 'Error al iniciar sesión');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className={`register-container ${useDarkMode().effectiveMode === 'dark' ? 'dark' : ''}`}>
       <h1>Iniciar Sesión</h1>
-      <form  className="register-form">
+      <form onSubmit={handleSubmit} className="register-form">
         <div className="form-group">
-          <label htmlFor="email">Nombre ID:</label>
+          <label htmlFor="username">Nombre ID:</label>
           <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            type="text"
+            id="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             required
           />
         </div>
@@ -41,20 +61,15 @@ const Login = () => {
         </div>
 
         {error && <p className="error-message">{error}</p>}
-        {resetMessage && <p className="success-message">{resetMessage}</p>}
 
-        <button type="submit" className="register-button">
-          Iniciar Sesión
+        <button 
+          type="submit" 
+          className="register-button"
+          disabled={isLoading}
+        >
+          {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
         </button>
-        <p className="reset-link">
-          ¿Olvidaste tu contraseña?{' '}
-          <span
 
-            style={{ cursor: 'pointer', color: '#3d9bff' }}
-          >
-            Restablecer Contraseña
-          </span>
-        </p>
         <p className="register-link">
           ¿No tienes cuenta?{' '}
           <span
