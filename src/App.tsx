@@ -19,6 +19,7 @@ import WhatIsAbout from './pages/WhatIsItAbout/WhatIsItAbout';
 import Login from './pages/Login/Login';
 import Register from './pages/Register/Register';
 import Feed from './pages/Feed/Feed';
+import SettingsAccount from './pages/SettingsAccount/SettingsAccount';
 
 import axios from 'axios';
 
@@ -57,6 +58,7 @@ const AppContent: React.FC = () => {
 
         {/* Ruta protegida para /feed */}
         <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
+        <Route path="/feed/settings" element={<ProtectedRoute><SettingsAccount/></ProtectedRoute>}/>
 
         <Route path="*" element={<NotFound />} />
       </Routes>
