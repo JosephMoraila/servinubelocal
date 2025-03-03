@@ -2,6 +2,7 @@ import { useEffect, useState, FormEvent } from 'react';
 import { useDarkMode } from '../../contexts/DarkModeContext';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useMessageBoxContext } from '../../contexts/MessageBoxContext';
+import axios from 'axios';
 import './Register.css'
 
 const Register = () => {
@@ -37,36 +38,36 @@ const Register = () => {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      alert("Las contraseñas no coinciden");
-      return;
-    }
+// ...existing code...
 
-    try {
-      const response = await fetch("http://localhost:3000/api/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          publicName: formData.userName,
-          username: formData.nameID,
-          password: formData.password,
-        }),
-      });
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (formData.password !== formData.confirmPassword) {
+    setError("Las contraseñas no coinciden");
+    return;
+  }
 
-      const data = await response.json();
-      if (response.ok) {
-        setMessageMessageBox("Registro exitoso. Inicia sesión para continuar.");
-        navigate('/feed');
-      } else {
-        alert(data.message);
+  try {
+    const response = await axios.post("http://localhost:3000/api/register", {
+      publicName: formData.userName,
+      username: formData.nameID,
+      password: formData.password,
+    }, {
+      withCredentials: true,
+      headers: {
+        'Content-Type': 'application/json'
       }
-    } catch (error) {
-      console.error("Error al registrar:", error);
-      alert("Hubo un error en el registro");
+    });
+
+    if (response.data.success) {
+      setMessageMessageBox("Registro exitoso");
+      navigate('/feed');
     }
-  };
+  } catch (error: any) {
+    console.error("Error al registrar:", error);
+    setError(error.response?.data?.message || "Error en el registro");
+  }
+};
 
   return (
     <div className={`register-container ${useDarkMode().effectiveMode === 'dark' ? 'dark' : ''}`}>

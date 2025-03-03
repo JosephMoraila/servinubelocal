@@ -11,38 +11,42 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const location = useLocation();
 
-// ...existing code...
-
-useEffect(() => {
-  const checkAuth = async () => {
-    try {
-      const response = await axios.get("http://localhost:3000/api/auth/validate", {
-        withCredentials: true,
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/api/auth/validate", {
+          withCredentials: true,
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        console.log("Respuesta de validación:", response.data);
+        
+        if (response.data.authenticated && response.data.user) {
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+          throw new Error("No autenticado");
         }
-      });
-      
-      console.log("Response from validate:", response.data);
-      setIsAuthenticated(response.data.authenticated);
-    } catch (error) {
-      console.error("Auth check failed:", error);
-      setIsAuthenticated(false);
-    } finally {
-      setLoading(false);
-    }
-  };
+      } catch (error) {
+        console.error("Error de autenticación:", error);
+        setIsAuthenticated(false);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  checkAuth();
-}, []);
+    checkAuth();
+  }, []);
 
   if (loading) {
     return <div>Cargando...</div>;
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   return <>{children}</>;
