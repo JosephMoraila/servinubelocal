@@ -37,14 +37,53 @@ async function initializeDatabase() {
         }
     } catch (error) {
         console.error("❌ Error al verificar/crear la base de datos:", error);
+        throw error;
     } finally {
         await client.end();
     }
 }
 
-// Ejecutar la función para verificar/crear la base de datos antes de usar `pool`
-initializeDatabase().then(() => {
-    console.log("🔄 Base de datos lista.");
-}).catch(console.error);
+async function initializeTables() {
+    try {
+        const tableExists = await pool.query(`
+            SELECT EXISTS (
+                SELECT FROM pg_tables
+                WHERE schemaname = 'public'
+                AND tablename = 'usuarios'
+            );
+        `);
+
+        if (!tableExists.rows[0].exists) {
+            console.log("⚠️ Tabla 'usuarios' no existe. Creándola...");
+            
+            await pool.query(`
+                CREATE TABLE usuarios (
+                    id SERIAL PRIMARY KEY,
+                    nombre_publico VARCHAR(100) NOT NULL UNIQUE,
+                    password VARCHAR(255) NOT NULL
+                );
+            `);
+            
+            console.log("✅ Tabla 'usuarios' creada exitosamente");
+        } else {
+            console.log("✅ Tabla 'usuarios' ya existe");
+        }
+    } catch (error) {
+        console.error("❌ Error al inicializar las tablas:", error);
+        throw error;
+    }
+}
+
+// Ejecutar la inicialización de la base de datos y las tablas
+initializeDatabase()
+    .then(async () => {
+        console.log("🔄 Base de datos lista.");
+        await initializeTables();
+        console.log("✅ Inicialización completa.");
+    })
+    .catch(error => {
+        console.error("❌ Error en la inicialización:", error);
+        process.exit(1);
+    });
 
 export { pool };

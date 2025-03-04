@@ -49,7 +49,7 @@ router.get("/auth/validate", asyncHandler(async (req: Request, res: Response) =>
 
         // Verificar que el usuario existe en la base de datos
         const result = await pool.query(
-            "SELECT id, nombre_publico, nombre_id FROM usuarios WHERE id = $1",
+            "SELECT id, nombre_publico FROM usuarios WHERE id = $1",
             [(decoded as any).userId]
         );
 
@@ -69,7 +69,6 @@ router.get("/auth/validate", asyncHandler(async (req: Request, res: Response) =>
             user: {
                 id: user.id,
                 nombre_publico: user.nombre_publico,
-                nombre_id: user.nombre_id
             }
         });
 

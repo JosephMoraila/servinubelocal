@@ -13,7 +13,6 @@ const Register = () => {
   const [formData, setFormData] = useState({
     password: '',
     confirmPassword: '',
-    nameID: '',
     userName: '',
   });
 
@@ -50,7 +49,6 @@ const handleSubmit = async (e: React.FormEvent) => {
   try {
     const response = await axios.post("http://localhost:3000/api/register", {
       publicName: formData.userName,
-      username: formData.nameID,
       password: formData.password,
     }, {
       withCredentials: true,
@@ -93,25 +91,6 @@ const handleSubmit = async (e: React.FormEvent) => {
               required
             />
           </div>
-
-
-            <div className="form-group">
-              <div className="label-help-container">
-                <label htmlFor="nameID">Nombre ID:</label>
-                <span className="help-icon">?
-                  <span className="tooltip">
-                    Este nombre será el que uses para iniciar sesión en la plataforma como si fuera tu correo electrónico en una página web
-                  </span>
-                </span>
-              </div>
-              <input
-                type="text"
-                id="nameID"
-                value={formData.nameID}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
 
             <div className="form-group">
               <label htmlFor="password">Contraseña:</label>

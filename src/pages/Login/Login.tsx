@@ -39,7 +39,7 @@ const Login = () => {
       <h1>Iniciar Sesión</h1>
       <form onSubmit={handleSubmit} className="register-form">
         <div className="form-group">
-          <label htmlFor="username">Nombre ID:</label>
+          <label htmlFor="username">Nombre:</label>
           <input
             type="text"
             id="username"
