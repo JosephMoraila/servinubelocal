@@ -5,6 +5,8 @@ import { pool } from "../config/db";
 import { asyncHandler } from "../utils/asyncHandler";
 import fs from "fs";
 import path from "path";
+import { generateToken } from "../utils/generateToken";
+import { setAuthCookie } from "../utils/cookieTokenRes";
 
 /**
  * Router instance for handling authentication routes
@@ -57,20 +59,10 @@ router.post("/login", asyncHandler(async (req: Request, res: Response) => {
         }
 
         // Generate JWT token
-        const token = jwt.sign(
-            { userId: user.id },
-            JWT_SECRET,
-            { expiresIn: "1h" }
-        );
+        const token = generateToken(user.id);
 
         // Set HTTP-only cookie with token
-        res.cookie("token", token, {
-            httpOnly: true, // Prevents JavaScript access to the cookie
-            secure: process.env.NODE_ENV === "production", // HTTPS only in production
-            sameSite: "lax", // CSRF protection
-            maxAge: 3600000, // Cookie expires in 1 hour
-            path: "/" // Cookie is valid for all paths
-        });
+        setAuthCookie(res, token);
 
         // Send success response with user data
         return res.json({

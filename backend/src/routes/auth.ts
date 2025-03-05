@@ -1,36 +1,14 @@
-import fs from "fs";
-import path from "path";
-import crypto from "crypto";
-import jwt from "jsonwebtoken";
+// 👇 Rutas de autenticación
 import { Router, Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
 import { pool } from "../config/db";
 import { asyncHandler } from "../utils/asyncHandler";
+import { generateToken } from "../utils/generateToken";
+import { setAuthCookie } from "../utils/cookieTokenRes";
 
 const router = Router();
 
 // 📌 Ruta donde se guardará la clave secreta
-const secretPath = path.join(__dirname, "../jwt_secret.key");
-
-// 📌 Verificar si ya existe una clave, si no, generarla
-let JWT_SECRET: string;
-if (fs.existsSync(secretPath)) {
-    JWT_SECRET = fs.readFileSync(secretPath, "utf8").trim();
-} else {
-    JWT_SECRET = crypto.randomBytes(32).toString("hex");
-    fs.writeFileSync(secretPath, JWT_SECRET);
-}
-
-console.log("JWT_SECRET cargado correctamente");
-
-// 🔐 Función para generar el token
-const generateToken = (userId: number) => {  // Cambiar el tipo a number
-    return jwt.sign(
-        { userId }, 
-        JWT_SECRET, 
-        { expiresIn: "1h" }
-    );
-};
 
 
 
@@ -65,13 +43,7 @@ router.post("/register", asyncHandler(async (req: Request, res: Response) => {
         const token = generateToken(newUser.id);
 
         // Establecer la cookie
-        res.cookie("token", token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production", // Usar variable de entorno
-            sameSite: "lax",
-            maxAge: 3600000, // 1 hora
-            path: "/"
-        });
+        setAuthCookie(res, token);
 
         return res.status(200).json({
             success: true,
