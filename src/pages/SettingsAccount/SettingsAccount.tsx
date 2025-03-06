@@ -3,12 +3,13 @@ import './SettingsAccount.css';
 import { useDarkMode } from '../../contexts/DarkModeContext';
 import MessageBox from '../../components/MessageBox/MessageBox';
 import axios from 'axios';
-import LoadingBar from '../../components/LoadingProgressBar/LoadingProgressBar'; 
 import { useNavigate } from 'react-router-dom';
 import { useMessageBoxContext } from '../../contexts/MessageBoxContext';
+import { useLoadingBar } from '../../contexts/LoadingBarContext';
 
 const SettingsAccount: React.FC = () => {
     const navigate = useNavigate();
+    const { setIsLoadingBar } = useLoadingBar();
     const {messageMessageBox, setMessageMessageBox, colorMessageBox, setColorMessageBox} = useMessageBoxContext();
     const [userEmail, setUserEmail] = useState<string | null>(null);
     const [userPhone, setUserPhone] = useState<string | null>(null);
@@ -23,9 +24,6 @@ const SettingsAccount: React.FC = () => {
     const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
     const [, setAuthPassword] = useState<string>('');
 
-
-    const [isLoadingBar, setIsLoadingBar] = useState<boolean>(false);
-
     const handleLogout = async () => {
         setIsLoadingBar(true);
         try {
@@ -36,10 +34,7 @@ const SettingsAccount: React.FC = () => {
             if (response.data.success) {
                 setMessageMessageBox('Sesión cerrada correctamente');
                 setColorMessageBox('#008000');
-                
-                setTimeout(() => {
-                    navigate('/login');
-                }, 1500);
+                navigate('/');
             }
         } catch (error) {
             console.error('Error al cerrar sesión:', error);
@@ -49,17 +44,6 @@ const SettingsAccount: React.FC = () => {
             setIsLoadingBar(false);
         }
     };
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            if (messageMessageBox !== '') {
-                setMessageMessageBox('');
-                setColorMessageBox('#008000');
-            }
-        }, 3000);
-
-        return () => clearTimeout(timer);
-    }, [messageMessageBox]);
 
 
     const [activeSetting, setActiveSetting] = useState<string>('general');
@@ -141,7 +125,6 @@ const SettingsAccount: React.FC = () => {
 
     return (
         <div className="settings-container">
-            <LoadingBar isLoading={isLoadingBar} />
             {messageMessageBox && <MessageBox message={messageMessageBox} color={colorMessageBox} />}
             <div className={`settings-sidebar ${useDarkMode().effectiveMode === 'dark' ? 'dark' : ''}`}>
                 {settingsOptions.map((option) => (

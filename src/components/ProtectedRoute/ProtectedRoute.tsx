@@ -22,8 +22,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
           }
         });
         
-        console.log("Respuesta de validación:", response.data);
-        
         if (response.data.authenticated && response.data.user) {
           setIsAuthenticated(true);
         } else {

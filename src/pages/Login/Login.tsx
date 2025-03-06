@@ -1,11 +1,13 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDarkMode } from '../../contexts/DarkModeContext';
+import { useLoadingBar } from '../../contexts/LoadingBarContext';
 import axios from 'axios';
 import '../../App.css';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { setIsLoadingBar } = useLoadingBar();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -17,6 +19,7 @@ const Login = () => {
     setIsLoading(true);
 
     try {
+      setIsLoadingBar(true);
       const response = await axios.post('http://localhost:3000/api/login', {
         username,
         password
@@ -30,6 +33,7 @@ const Login = () => {
     } catch (error: any) {
       setError(error.response?.data?.message || 'Error al iniciar sesión');
     } finally {
+      setIsLoadingBar(false);
       setIsLoading(false);
     }
   };

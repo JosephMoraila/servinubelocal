@@ -10,8 +10,6 @@ const router = Router();
 
 // 📌 Ruta donde se guardará la clave secreta
 
-
-
 // 📌 Ruta de registro de usuario
 // 📌 Ruta de registro de usuario
 router.post("/register", asyncHandler(async (req: Request, res: Response) => {
