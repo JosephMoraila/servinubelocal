@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, createContext, useContext } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import axios from "axios";
 
-interface ProtectedRouteProps {
-  children: React.ReactNode;
-}
+// Crear contexto de autenticación
+const AuthContext = createContext<{ userId: string | null }>({ userId: null });
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+export const useAuth = () => useContext(AuthContext);
+
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
   const location = useLocation();
 
   useEffect(() => {
@@ -16,17 +18,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
       try {
         const response = await axios.get("http://localhost:3000/api/auth/validate", {
           withCredentials: true,
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
         });
-        
+
         if (response.data.authenticated && response.data.user) {
           setIsAuthenticated(true);
+          setUserId(response.data.user.id); // Guardamos el userId
         } else {
           setIsAuthenticated(false);
-          throw new Error("No autenticado");
         }
       } catch (error) {
         console.error("Error de autenticación:", error);
@@ -39,15 +37,14 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     checkAuth();
   }, []);
 
-  if (loading) {
-    return <div>Cargando...</div>;
-  }
+  if (loading) return <div>Cargando...</div>;
+  if (!isAuthenticated) return <Navigate to="/login" state={{ from: location }} replace />;
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-
-  return <>{children}</>;
+  return (
+    <AuthContext.Provider value={{ userId }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export default ProtectedRoute;

@@ -1,53 +1,49 @@
-import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
-import './App.css';
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import "./App.css";
 
-import { DarkModeProvider } from '../src/contexts/DarkModeContext';
-import { MessageBoxProvider, useMessageBoxContext } from '../src/contexts/MessageBoxContext';
-import { useLoadingBar, LoadingBarProvider } from '../src/contexts/LoadingBarContext';
+import { DarkModeProvider } from "../src/contexts/DarkModeContext";
+import { MessageBoxProvider, useMessageBoxContext } from "../src/contexts/MessageBoxContext";
+import { useLoadingBar, LoadingBarProvider } from "../src/contexts/LoadingBarContext";
 
-import MessageBox from './components/MessageBox/MessageBox';
-import LoadingBar from './components/LoadingProgressBar/LoadingProgressBar';
-import Navigation from './components/Navigation/Navigation';
-import NavigationFeed from './components/NavigationFeed/NavigationFeed';
-import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
+import MessageBox from "./components/MessageBox/MessageBox";
+import LoadingBar from "./components/LoadingProgressBar/LoadingProgressBar";
+import Navigation from "./components/Navigation/Navigation";
+import NavigationFeed from "./components/NavigationFeed/NavigationFeed";
+import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 
-import HeroSection from './pages/Hero/Hero';
-import NotFound from './pages/NotFound/NotFound';
-import About from './pages/About/About';
-import WhatIsAbout from './pages/WhatIsItAbout/WhatIsItAbout';
-import Login from './pages/Login/Login';
-import Register from './pages/Register/Register';
-import Feed from './pages/Feed/Feed';
-import SettingsAccount from './pages/SettingsAccount/SettingsAccount';
+import HeroSection from "./pages/Hero/Hero";
+import NotFound from "./pages/NotFound/NotFound";
+import About from "./pages/About/About";
+import WhatIsAbout from "./pages/WhatIsItAbout/WhatIsItAbout";
+import Login from "./pages/Login/Login";
+import Register from "./pages/Register/Register";
+import Feed from "./pages/Feed/Feed";
+import SettingsAccount from "./pages/SettingsAccount/SettingsAccount";
 
-import axios from 'axios';
+import axios from "axios";
 
+// Configuración global de axios
 axios.defaults.withCredentials = true;
 
 const AppContent: React.FC = () => {
   const { isLoadingBar } = useLoadingBar();
-  const {messageMessageBox} = useMessageBoxContext();
+  const { messageMessageBox } = useMessageBoxContext();
   const location = useLocation();
-  const navigate = useNavigate();
 
+  // Definir rutas donde ocultar Navigation
+  const hideNavigationPaths = new Set(["/terms", "/privacy", "/waiting", "/feed"]);
 
-
-  // Define las rutas donde Navigation no debe aparecer
-  const hideNavigationPaths = [ '/terms', '/privacy', '/waiting', '/feed'];
-
-  // Mostrar NavigationFeed si la ruta actual es /feed
-  const isFeedPage = location.pathname.toLowerCase().startsWith('/feed');
+  // Verificar si la página actual es "/feed" para NavigationFeed
+  const isFeedPage = location.pathname.toLowerCase().startsWith("/feed");
 
   return (
     <div>
-      <LoadingBar isLoading={isLoadingBar}/>
-      {messageMessageBox && <MessageBox message={messageMessageBox}/> }
+      <LoadingBar isLoading={isLoadingBar} />
+      {messageMessageBox && <MessageBox message={messageMessageBox} />}
+      
       {/* Mostrar NavigationFeed solo en /feed */}
-      {isFeedPage && <NavigationFeed />}
-
-      {/* Mostrar Navigation solo si no estamos en una de las rutas específicas */}
-      {!hideNavigationPaths.includes(location.pathname.toLowerCase()) && !isFeedPage && <Navigation /> }
+      {isFeedPage ? <NavigationFeed /> : !hideNavigationPaths.has(location.pathname.toLowerCase()) && <Navigation />}
 
       <Routes>
         <Route path="/" element={<HeroSection />} />
@@ -56,9 +52,9 @@ const AppContent: React.FC = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* Ruta protegida para /feed */}
+        {/* Rutas protegidas */}
         <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
-        <Route path="/feed/settings" element={<ProtectedRoute><SettingsAccount/></ProtectedRoute>}/>
+        <Route path="/feed/settings" element={<ProtectedRoute><SettingsAccount /></ProtectedRoute>} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>
