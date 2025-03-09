@@ -13,17 +13,28 @@ if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// Configuración de Multer con ID del usuario
+// Middleware para procesar el userId antes de multer
+const processUserIdMiddleware = (req: Request, res: Response, next: Function) => {
+    // Log del body completo para debugging
+    console.log("📋 Headers recibidos:", req.headers);
+    console.log("📋 Body recibido:", req.body);
+    next();
+};
+
+// Configuración de Multer
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
+    destination: (req: any, file: any, cb: any) => {
         try {
             console.log("📝 Procesando archivo:", file.originalname);
-            console.log("📋 Datos del body:", req.body);
+            console.log("📋 Body en destination:", req.body);
 
+            // Obtener userId del body
             const userId = req.body.userId;
+            console.log("👤 UserId encontrado:", userId);
+
             if (!userId) {
-                console.warn("⚠️ Falta el userId en la petición");
-                return cb(new Error("Falta el userId en la petición"), "");
+                console.warn("⚠️ No se encontró userId");
+                return cb(new Error("userId es requerido"));
             }
 
             // Construir ruta de carpeta
@@ -33,14 +44,20 @@ const storage = multer.diskStorage({
             }
 
             console.log("📂 Carpeta destino:", userFolder);
-            fs.mkdirSync(userFolder, { recursive: true });
+
+            // Crear carpeta si no existe
+            if (!fs.existsSync(userFolder)) {
+                fs.mkdirSync(userFolder, { recursive: true });
+                console.log("✅ Directorio creado:", userFolder);
+            }
+
             cb(null, userFolder);
         } catch (error) {
-            console.error("❌ Error al crear directorio:", error);
-            cb(new Error("Error al crear el directorio"), "");
+            console.error("❌ Error en destination:", error);
+            cb(error);
         }
     },
-    filename: (req, file, cb) => {
+    filename: (req: any, file: any, cb: any) => {
         const timestamp = Date.now();
         const newFilename = `${timestamp}-${file.originalname}`;
         console.log("📄 Nombre del archivo generado:", newFilename);
@@ -51,35 +68,43 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // ✅ Endpoint para subir archivos
-router.post("/upload", upload.single("file"), asyncHandler(async (req: Request, res: Response) => {
-    console.log("🔄 Iniciando subida de archivo...");
-
-    if (!req.file) {
-        console.warn("⚠️ No se proporcionó ningún archivo");
-        return res.status(400).json({
-            success: false,
-            message: "No se ha proporcionado ningún archivo"
-        });
-    }
-
-    console.log("✅ Archivo subido:", {
-        nombre: req.file.filename,
-        ruta: req.file.path,
-        tamaño: req.file.size,
-        tipo: req.file.mimetype
-    });
-
-    return res.status(200).json({
-        success: true,
-        message: "Archivo subido correctamente",
-        file: {
-            filename: req.file.filename,
-            path: req.file.path,
-            size: req.file.size,
-            mimetype: req.file.mimetype
+router.post("/upload", processUserIdMiddleware, (req: Request, res: Response) => {
+    upload.single("file")(req, res, async (err: any) => {
+        if (err) {
+            console.error("❌ Error en multer:", err);
+            return res.status(400).json({
+                success: false,
+                message: err.message || "Error al subir el archivo"
+            });
         }
+
+        if (!req.file) {
+            console.warn("⚠️ No se proporcionó ningún archivo");
+            return res.status(400).json({
+                success: false,
+                message: "No se ha proporcionado ningún archivo"
+            });
+        }
+
+        console.log("✅ Archivo subido:", {
+            nombre: req.file.filename,
+            ruta: req.file.path,
+            tamaño: req.file.size,
+            tipo: req.file.mimetype
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Archivo subido correctamente",
+            file: {
+                filename: req.file.filename,
+                path: req.file.path,
+                size: req.file.size,
+                mimetype: req.file.mimetype
+            }
+        });
     });
-}));
+});
 
 // ✅ Endpoint para crear carpetas
 router.post("/create-folder", asyncHandler(async (req: Request, res: Response) => {
@@ -89,7 +114,6 @@ router.post("/create-folder", asyncHandler(async (req: Request, res: Response) =
     const { userId, folder } = req.body;
 
     if (!userId || !folder) {
-        console.warn("⚠️ Faltan datos requeridos");
         return res.status(400).json({
             success: false,
             message: "Se requiere userId y nombre de carpeta"
@@ -98,10 +122,8 @@ router.post("/create-folder", asyncHandler(async (req: Request, res: Response) =
 
     try {
         const folderPath = path.join(uploadDir, userId.toString(), folder);
-        console.log("📂 Ruta de la carpeta a crear:", folderPath);
-
+        
         if (fs.existsSync(folderPath)) {
-            console.warn("⚠️ La carpeta ya existe:", folderPath);
             return res.status(400).json({
                 success: false,
                 message: "La carpeta ya existe"
@@ -109,7 +131,7 @@ router.post("/create-folder", asyncHandler(async (req: Request, res: Response) =
         }
 
         await fs.promises.mkdir(folderPath, { recursive: true });
-        console.log("✅ Carpeta creada exitosamente");
+        console.log("✅ Carpeta creada:", folderPath);
 
         return res.status(200).json({
             success: true,
@@ -117,7 +139,7 @@ router.post("/create-folder", asyncHandler(async (req: Request, res: Response) =
             path: folder
         });
     } catch (error) {
-        console.error("❌ Error al crear la carpeta:", error);
+        console.error("❌ Error al crear carpeta:", error);
         return res.status(500).json({
             success: false,
             message: "Error al crear la carpeta"
@@ -133,7 +155,6 @@ router.get("/list", asyncHandler(async (req: Request, res: Response) => {
     const { userId, folder } = req.query;
 
     if (!userId) {
-        console.warn("⚠️ Falta el userId en la petición");
         return res.status(400).json({
             success: false,
             message: "Se requiere un ID de usuario"
@@ -145,21 +166,12 @@ router.get("/list", asyncHandler(async (req: Request, res: Response) => {
         targetPath = path.join(targetPath, folder.toString());
     }
 
-    console.log("📂 Ruta objetivo:", targetPath);
-
-    if (!fs.existsSync(targetPath)) {
-        console.warn("⚠️ Carpeta no encontrada:", targetPath);
-        return res.status(404).json({
-            success: false,
-            message: "Carpeta no encontrada"
-        });
-    }
-
     try {
-        const files = await fs.promises.readdir(targetPath);
-        console.log("📄 Archivos encontrados:", files);
+        if (!fs.existsSync(targetPath)) {
+            await fs.promises.mkdir(targetPath, { recursive: true });
+        }
 
-        // Obtener información adicional de cada archivo
+        const files = await fs.promises.readdir(targetPath);
         const filesInfo = await Promise.all(files.map(async (file) => {
             const filePath = path.join(targetPath, file);
             const stats = await fs.promises.stat(filePath);
@@ -170,8 +182,6 @@ router.get("/list", asyncHandler(async (req: Request, res: Response) => {
                 createdAt: stats.birthtime
             };
         }));
-
-        console.log("✅ Información de archivos procesada");
 
         return res.status(200).json({
             success: true,

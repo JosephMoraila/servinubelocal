@@ -23,13 +23,14 @@ const Feed = () => {
       const response = await axios.get(`http://localhost:3000/api/list`, {
         params: { folder: currentFolder, userId }, // Enviamos userId
       });
-      console.log("📂 Archivos recibidos:", response.data);
+      console.log("📂 Archivos recibidos:", response.data.files);
 
       // Transformar los datos recibidos al formato esperado
-      const formattedFiles = response.data.files.map((file: string) => ({
-        name: file,
-        isDirectory: !file.includes("."), // Método simple para detectar carpetas
+      const formattedFiles = response.data.files.map((file: { name: string }) => ({
+        name: file.name,
+        isDirectory: !file.name.includes("."), // Método simple para detectar carpetas
       }));
+      
 
       setFiles(formattedFiles);
     } catch (error) {
@@ -66,28 +67,42 @@ const Feed = () => {
       return;
     }
 
+    console.log("📤 Iniciando subida con userId:", userId);
+
     const formData = new FormData();
+    // Importante: Agregar el userId primero
+    formData.append("userId", userId.toString());
     formData.append("file", selectedFile);
-    formData.append("folder", currentFolder);
-    formData.append("userId", userId); // 📌 Pasamos userId al backend
+    if (currentFolder) {
+      formData.append("folder", currentFolder);
+    }
+
+    // Para debugging: mostrar contenido del FormData
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}: ${value}`);
+    }
 
     try {
-      await axios.post("http://localhost:3000/api/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      const response = await axios.post("http://localhost:3000/api/upload", formData, {
+        headers: { 
+          "Content-Type": "multipart/form-data"
+        },
+        withCredentials: true
       });
-      console.log("✅ Archivo subido:", selectedFile.name);
 
-      fetchFiles();
-      setSelectedFile(null);
-
-      // Limpiar el input de archivo
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-      if (fileInput) fileInput.value = "";
-    } catch (error) {
-      console.error("❌ Error al subir archivo:", error);
-      alert("Error al subir el archivo");
+      if (response.data.success) {
+        console.log("✅ Archivo subido:", selectedFile.name);
+        await fetchFiles(); // Esperar a que se actualice la lista
+        setSelectedFile(null);
+        
+        const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+        if (fileInput) fileInput.value = "";
+      }
+    } catch (error: any) {
+      console.error("❌ Error al subir archivo:", error.response?.data || error);
+      alert(error.response?.data?.message || "Error al subir el archivo");
     }
-  };
+};
 
   // Navegar a una carpeta
   const navigateToFolder = (folderName: string) => {
