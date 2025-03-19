@@ -68,31 +68,26 @@ const Feed = () => {
     }
 
     console.log("📤 Iniciando subida con userId:", userId);
+    console.log("📂 Carpeta actual:", currentFolder);
 
     const formData = new FormData();
-    // Importante: Agregar el userId primero
-    formData.append("userId", userId.toString());
     formData.append("file", selectedFile);
-    if (currentFolder) {
-      formData.append("folder", currentFolder);
-    }
-
-    // Para debugging: mostrar contenido del FormData
-    for (let [key, value] of formData.entries()) {
-      console.log(`${key}: ${value}`);
-    }
-
+    
     try {
       const response = await axios.post("http://localhost:3000/api/upload", formData, {
         headers: { 
           "Content-Type": "multipart/form-data"
         },
-        withCredentials: true
+        withCredentials: true,
+        params: {
+          userId: userId,
+          folder: currentFolder
+        }
       });
 
       if (response.data.success) {
         console.log("✅ Archivo subido:", selectedFile.name);
-        await fetchFiles(); // Esperar a que se actualice la lista
+        await fetchFiles();
         setSelectedFile(null);
         
         const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;

@@ -25,33 +25,35 @@ const processUserIdMiddleware = (req: Request, res: Response, next: Function) =>
 const storage = multer.diskStorage({
     destination: (req: any, file: any, cb: any) => {
         try {
-            console.log("📝 Procesando archivo:", file.originalname);
-            console.log("📋 Body en destination:", req.body);
+            // Get userId from query params since formData is not yet parsed
+            const userId = req.query.userId;
+            const folder = req.query.folder;
 
-            // Obtener userId del body
-            const userId = req.body.userId;
-            console.log("👤 UserId encontrado:", userId);
+            console.log("👤 UserId from query:", userId);
+            console.log("📂 Folder from query:", folder);
 
             if (!userId) {
                 console.warn("⚠️ No se encontró userId");
                 return cb(new Error("userId es requerido"));
             }
 
-            // Construir ruta de carpeta
-            let userFolder = path.join(uploadDir, userId.toString());
-            if (req.body.folder) {
-                userFolder = path.join(userFolder, req.body.folder);
+            // Construir ruta base del usuario
+            let targetPath = path.join(uploadDir, userId.toString());
+
+            // Si hay una carpeta específica, añadirla a la ruta
+            if (folder) {
+                targetPath = path.join(targetPath, folder);
+                console.log("📂 Ruta final con subcarpeta:", targetPath);
             }
 
-            console.log("📂 Carpeta destino:", userFolder);
-
-            // Crear carpeta si no existe
-            if (!fs.existsSync(userFolder)) {
-                fs.mkdirSync(userFolder, { recursive: true });
-                console.log("✅ Directorio creado:", userFolder);
+            // Asegurar que la carpeta existe
+            if (!fs.existsSync(targetPath)) {
+                fs.mkdirSync(targetPath, { recursive: true });
+                console.log("✅ Directorio creado:", targetPath);
             }
 
-            cb(null, userFolder);
+            console.log("✅ Usando directorio:", targetPath);
+            cb(null, targetPath);
         } catch (error) {
             console.error("❌ Error en destination:", error);
             cb(error);
@@ -69,6 +71,9 @@ const upload = multer({ storage });
 
 // ✅ Endpoint para subir archivos
 router.post("/upload", processUserIdMiddleware, (req: Request, res: Response) => {
+    console.log("📤 Iniciando upload, folder en query:", req.query.folder);
+    
+    // Configurar multer con el middleware
     upload.single("file")(req, res, async (err: any) => {
         if (err) {
             console.error("❌ Error en multer:", err);
@@ -86,12 +91,8 @@ router.post("/upload", processUserIdMiddleware, (req: Request, res: Response) =>
             });
         }
 
-        console.log("✅ Archivo subido:", {
-            nombre: req.file.filename,
-            ruta: req.file.path,
-            tamaño: req.file.size,
-            tipo: req.file.mimetype
-        });
+        // Log adicional para verificar la ruta final
+        console.log("✅ Archivo subido en ruta:", req.file.path);
 
         return res.status(200).json({
             success: true,
