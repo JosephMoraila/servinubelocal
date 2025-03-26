@@ -3,14 +3,20 @@ import axios from "axios";
 import { useAuth } from "../../components/ProtectedRoute/ProtectedRoute";
 import "./Feed.css";
 
+interface FileProgress {
+  name: string;
+  progress: number;
+}
+
 const Feed = () => {
   const { userId } = useAuth();
   const [files, setFiles] = useState<{ name: string; isDirectory: boolean }[]>([]);
   const [folderName, setFolderName] = useState("");
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [currentFolder, setCurrentFolder] = useState<string>("");
   const [showNewMenu, setShowNewMenu] = useState(false);
   const [showFolderModal, setShowFolderModal] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<FileProgress[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -60,35 +66,52 @@ const Feed = () => {
     }
   };
 
-  const uploadFile = async () => {
-    if (!selectedFile || !userId) {
-      alert("Seleccione un archivo");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("file", selectedFile);
-    
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(e.target.files || []);
+    if (selectedFiles.length === 0) return;
+  
+    setUploading(true);
+    setUploadProgress(selectedFiles.map(file => ({ name: file.name, progress: 0 })));
+  
     try {
-      const response = await axios.post("http://localhost:3000/api/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-        withCredentials: true,
-        params: {
-          userId,
-          folder: currentFolder
-        }
-      });
-
-      if (response.data.success) {
-        await fetchFiles();
-        setSelectedFile(null);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = "";
-        }
+      // Upload files in parallel using Promise.all
+      await Promise.all(selectedFiles.map(async (file) => {
+        const formData = new FormData();
+        formData.append("file", file);
+        
+        await axios.post("http://localhost:3000/api/upload", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+          withCredentials: true,
+          params: {
+            userId,
+            folder: currentFolder
+          },
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total!);
+            setUploadProgress(prev => 
+              prev.map(item => 
+                item.name === file.name 
+                  ? { ...item, progress: percentCompleted }
+                  : item
+              )
+            );
+          }
+        });
+      }));
+  
+      console.log("✅ Todos los archivos se subieron correctamente");
+      await fetchFiles();
+      
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
       }
-    } catch (error: any) {
-      console.error("❌ Error al subir archivo:", error);
-      alert("Error al subir el archivo");
+    } catch (error) {
+      console.error("❌ Error al subir archivos:", error);
+      alert("Error al subir uno o más archivos");
+    } finally {
+      setUploading(false);
+      setUploadProgress([]);
     }
   };
 
@@ -118,36 +141,6 @@ const Feed = () => {
     fileInputRef.current?.click();
   };
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      try {
-        const formData = new FormData();
-        formData.append("file", file);
-        
-        const response = await axios.post("http://localhost:3000/api/upload", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-          withCredentials: true,
-          params: {
-            userId,
-            folder: currentFolder
-          }
-        });
-  
-        if (response.data.success) {
-          console.log("✅ Archivo subido correctamente");
-          await fetchFiles();
-          if (fileInputRef.current) {
-            fileInputRef.current.value = "";
-          }
-        }
-      } catch (error: any) {
-        console.error("❌ Error al subir archivo:", error);
-        alert("Error al subir el archivo");
-      }
-    }
-  };
-
   return (
     <div className="feed-container">
       <div className="feed-header">
@@ -165,7 +158,7 @@ const Feed = () => {
               </div>
               <div className="menu-item" onClick={handleUploadClick}>
                 <span className="icon">📤</span>
-                Subir archivo
+                Subir archivos
               </div>
             </div>
           )}
@@ -198,11 +191,31 @@ const Feed = () => {
 
       {/* Hidden file input */}
       <input
-      type="file"
-      ref={fileInputRef}
-      style={{ display: "none" }}
-      onChange={handleFileSelect}
-    />
+        type="file"
+        multiple
+        accept="*/*"
+        ref={fileInputRef}
+        style={{ display: "none" }}
+        onChange={handleFileSelect}
+      />
+
+      {/* Upload progress indicator */}
+      {uploading && uploadProgress.length > 0 && (
+        <div className="upload-progress">
+          {uploadProgress.map((file) => (
+            <div key={file.name} className="progress-item">
+              <span className="filename">{file.name}</span>
+              <div className="progress-bar">
+                <div 
+                  className="progress-fill"
+                  style={{ width: `${file.progress}%` }}
+                />
+              </div>
+              <span className="progress-text">{file.progress}%</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Folder creation modal */}
       {showFolderModal && (
