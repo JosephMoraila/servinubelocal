@@ -4,6 +4,10 @@
   background-color: #f8f9fa;
 }
 
+.feed-container.dark{
+  background-color: #000000;
+}
+
 .feed-header {
   display: flex;
   align-items: center;
@@ -14,6 +18,10 @@
   position: sticky;
   top: 0;
   z-index: 100;
+}
+
+.feed-header.dark{
+  background-color: #000000;
 }
 
 .feed-title {
@@ -47,15 +55,15 @@
 
 .new-menu {
   position: absolute;
-  top: 100%;
-  left: 0;
+  top: calc(100% + 4px); /* Adjust position to account for margin */
+  right: 0; /* Align to right instead of left */
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
   padding: 8px 0;
   min-width: 200px;
-  margin-top: 4px;
   z-index: 1000;
+  /* Remove margin-top and use calc() in top property instead */
 }
 
 .menu-item {
@@ -235,3 +243,4 @@
   display: block;
   text-align: right;
 }
+

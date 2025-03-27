@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useAuth } from "../../components/ProtectedRoute/ProtectedRoute";
 import "./Feed.css";
+import { useDarkMode } from '../../contexts/DarkModeContext'
 
 interface FileProgress {
   name: string;
@@ -18,6 +19,7 @@ const Feed = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<FileProgress[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { effectiveMode } = useDarkMode();
 
   useEffect(() => {
     if (userId) {
@@ -142,9 +144,9 @@ const Feed = () => {
   };
 
   return (
-    <div className="feed-container">
-      <div className="feed-header">
-        <h1 className="feed-title">Mi unidad</h1>
+    <div className={`feed-container ${effectiveMode === 'dark' ? 'dark' : ''}`}>
+      <div className={`feed-header ${effectiveMode === 'dark' ? 'dark' : ''}`}>
+        <h1 className={`feed-title ${effectiveMode === 'dark' ? 'dark' : ''}`}>Mi unidad</h1>
         <div className="new-button">
           <button onClick={handleNewClick}>
             <span>➕</span>
