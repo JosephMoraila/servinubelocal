@@ -147,13 +147,13 @@ const Feed = () => {
     <div className={`feed-container ${effectiveMode === 'dark' ? 'dark' : ''}`}>
       <div className={`feed-header ${effectiveMode === 'dark' ? 'dark' : ''}`}>
         <h1 className={`feed-title ${effectiveMode === 'dark' ? 'dark' : ''}`}>Mi unidad</h1>
-        <div className="new-button">
+        <div className={`new-button ${effectiveMode === 'dark' ? 'dark' : ''}`}>
           <button onClick={handleNewClick}>
             <span>➕</span>
             Nuevo
           </button>
           {showNewMenu && (
-            <div className="new-menu">
+            <div className={`new-menu ${effectiveMode === 'dark' ? 'dark' : ''}`}>
               <div className="menu-item" onClick={handleCreateFolderClick}>
                 <span className="icon">📁</span>
                 Nueva carpeta
@@ -179,7 +179,7 @@ const Feed = () => {
           {files.map((file, index) => (
             <div
               key={index}
-              className="file-item"
+              className={`file-item ${effectiveMode === 'dark' ? 'dark' : ''}`}
               onClick={() => file.isDirectory && navigateToFolder(file.name)}
             >
               <div className="file-icon">
@@ -222,7 +222,7 @@ const Feed = () => {
       {/* Folder creation modal */}
       {showFolderModal && (
         <div className="modal">
-          <div className="modal-content">
+          <div className={`modal-content ${effectiveMode === 'dark' ? 'dark' : ''}`}>
             <div className="modal-header">
               <h2 className="modal-title">Nueva carpeta</h2>
             </div>
