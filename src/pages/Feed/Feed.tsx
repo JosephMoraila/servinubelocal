@@ -203,9 +203,9 @@ const Feed = () => {
 
       {/* Upload progress indicator */}
       {uploading && uploadProgress.length > 0 && (
-        <div className="upload-progress">
+        <div className={`upload-progress ${effectiveMode === 'dark' ? 'dark' : ''}`}>
           {uploadProgress.map((file) => (
-            <div key={file.name} className="progress-item">
+            <div key={file.name} className={`progress-item ${effectiveMode === 'dark' ? 'dark' : ''}`}>
               <span className="filename">{file.name}</span>
               <div className="progress-bar">
                 <div 
