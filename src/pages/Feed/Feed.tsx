@@ -169,7 +169,7 @@ const Feed = () => {
 
       <div className="navigation">
         {currentFolder && (
-          <button onClick={goBack}>⬅️ Volver</button>
+          <button onClick={goBack} className={`button-back-folder ${effectiveMode === 'dark' ? 'dark' : ''}`}>⬅️ Volver</button>
         )}
         <span>📂 {currentFolder || "Mi unidad"}</span>
       </div>
