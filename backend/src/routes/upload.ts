@@ -15,17 +15,18 @@ if (!fs.existsSync(uploadDir)) {
 
 // Middleware para procesar el userId antes de multer
 const processUserIdMiddleware = (req: Request, res: Response, next: Function) => {
-    // Log del body completo para debugging
     console.log("📋 Headers recibidos:", req.headers);
     console.log("📋 Body recibido:", req.body);
     next();
 };
 
+
+const INVALID_FILENAME_CHARS = /[<>:"\/\\|?*]/g;
+const INVALID_FILENAME_REPLACEMENT = '_';
 // Configuración de Multer
 const storage = multer.diskStorage({
     destination: (req: any, file: any, cb: any) => {
         try {
-            // Get userId from query params since formData is not yet parsed
             const userId = req.query.userId;
             const folder = req.query.folder;
 
@@ -37,16 +38,13 @@ const storage = multer.diskStorage({
                 return cb(new Error("userId es requerido"));
             }
 
-            // Construir ruta base del usuario
             let targetPath = path.join(uploadDir, userId.toString());
 
-            // Si hay una carpeta específica, añadirla a la ruta
             if (folder) {
                 targetPath = path.join(targetPath, folder);
                 console.log("📂 Ruta final con subcarpeta:", targetPath);
             }
 
-            // Asegurar que la carpeta existe
             if (!fs.existsSync(targetPath)) {
                 fs.mkdirSync(targetPath, { recursive: true });
                 console.log("✅ Directorio creado:", targetPath);
@@ -60,10 +58,51 @@ const storage = multer.diskStorage({
         }
     },
     filename: (req: any, file: any, cb: any) => {
-        const timestamp = Date.now();
-        const newFilename = `${timestamp}-${file.originalname}`;
-        console.log("📄 Nombre del archivo generado:", newFilename);
-        cb(null, newFilename);
+        try {
+            // Convertir el Buffer a string UTF-8 y decodificar
+            const originalName = Buffer.from(file.originalname, 'latin1').toString('utf8');
+            
+            // Reemplazar caracteres no permitidos
+            const sanitizedName = originalName.replace(INVALID_FILENAME_CHARS, INVALID_FILENAME_REPLACEMENT);
+            
+            if (sanitizedName !== originalName) {
+                console.log("⚠️ Nombre de archivo sanitizado:", sanitizedName);
+            }
+
+            const targetPath = path.join(
+                req.query.userId.toString(),
+                req.query.folder || '',
+                sanitizedName
+            );
+            const fullPath = path.join(uploadDir, targetPath);
+    
+            if (fs.existsSync(fullPath)) {
+                // Si el archivo existe, añadir (1), (2), etc.
+                let counter = 1;
+                let newFilename = sanitizedName;
+                const ext = path.extname(sanitizedName);
+                const name = path.basename(sanitizedName, ext);
+                
+                while (fs.existsSync(path.join(
+                    uploadDir,
+                    req.query.userId.toString(),
+                    req.query.folder || '',
+                    newFilename
+                ))) {
+                    newFilename = `${name} (${counter})${ext}`;
+                    counter++;
+                }
+                
+                console.log("📄 Nombre del archivo generado (con numeración):", newFilename);
+                cb(null, newFilename);
+            } else {
+                console.log("📄 Usando nombre sanitizado:", sanitizedName);
+                cb(null, sanitizedName);
+            }
+        } catch (error) {
+            console.error("❌ Error al procesar nombre de archivo:", error);
+            cb(error);
+        }
     }
 });
 
@@ -73,7 +112,6 @@ const upload = multer({ storage });
 router.post("/upload", processUserIdMiddleware, (req: Request, res: Response) => {
     console.log("📤 Iniciando upload, folder en query:", req.query.folder);
     
-    // Configurar multer con el middleware
     upload.single("file")(req, res, async (err: any) => {
         if (err) {
             console.error("❌ Error en multer:", err);
@@ -91,7 +129,6 @@ router.post("/upload", processUserIdMiddleware, (req: Request, res: Response) =>
             });
         }
 
-        // Log adicional para verificar la ruta final
         console.log("✅ Archivo subido en ruta:", req.file.path);
 
         return res.status(200).json({
