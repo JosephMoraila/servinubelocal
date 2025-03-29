@@ -19,6 +19,7 @@ const Feed = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<FileProgress[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const { effectiveMode } = useDarkMode();
 
   useEffect(() => {
@@ -26,6 +27,19 @@ const Feed = () => {
       fetchFiles();
     }
   }, [currentFolder, userId]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowNewMenu(false);
+      }
+    };
+  
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const fetchFiles = async () => {
     if (!userId) return;
@@ -147,7 +161,7 @@ const Feed = () => {
     <div className={`feed-container ${effectiveMode === 'dark' ? 'dark' : ''}`}>
       <div className={`feed-header ${effectiveMode === 'dark' ? 'dark' : ''}`}>
         <h1 className={`feed-title ${effectiveMode === 'dark' ? 'dark' : ''}`}>Mi unidad</h1>
-        <div className={`new-button ${effectiveMode === 'dark' ? 'dark' : ''}`}>
+        <div className={`new-button ${effectiveMode === 'dark' ? 'dark' : ''}`} ref={menuRef}>
           <button onClick={handleNewClick}>
             <span>➕</span>
             Nuevo
